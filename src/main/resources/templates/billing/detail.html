@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Invoice', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <h2>Invoice #<span th:text="${invoice.id}">1</span> —
+            <span class="badge" th:classappend="${invoice.status}" th:text="${invoice.status}">UNPAID</span></h2>
+        <table>
+            <tbody>
+            <tr><th style="width:180px;">Guest</th><td><a th:href="@{'/guests/' + ${invoice.guestId}}" th:text="${invoice.guestName}">Guest</a></td></tr>
+            <tr><th>Room</th><td th:text="${invoice.roomNumber}">101</td></tr>
+            <tr><th>Issued</th><td th:text="${#temporals.format(invoice.issuedAt, 'yyyy-MM-dd HH:mm')}">2026-01-01</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Lines</h2>
+        <table>
+            <thead><tr><th>Description</th><th class="num">Amount</th></tr></thead>
+            <tbody>
+            <tr th:each="l : ${invoice.lines}">
+                <td th:text="${l.description}">Room</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(l.amount,1,2)}">€ 180.00</td>
+            </tr>
+            <tr><th>Total</th><th class="num" th:text="'€ ' + ${#numbers.formatDecimal(invoice.amount,1,2)}">€ 190.00</th></tr>
+            <tr><td class="muted">Balance due</td><td class="num" th:text="'€ ' + ${#numbers.formatDecimal(balance,1,2)}">€ 0.00</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Payments</h2>
+        <table>
+            <thead><tr><th>When</th><th>Method</th><th class="num">Amount</th></tr></thead>
+            <tbody>
+            <tr th:each="p : ${payments}">
+                <td class="muted" th:text="${#temporals.format(p.paidAt, 'yyyy-MM-dd HH:mm')}">2026-01-01</td>
+                <td th:text="${p.method}">Cash</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(p.amount,1,2)}">€ 100.00</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(payments)}"><td colspan="3" class="muted">No payments recorded.</td></tr>
+            </tbody>
+        </table>
+
+        <form th:if="${invoice.status.name() != 'PAID'}" method="post"
+              th:action="@{'/billing/' + ${invoice.id} + '/pay'}" class="row" style="margin-top:16px;">
+            <div class="field"><label>Amount (€)</label>
+                <input type="number" step="0.01" min="0.01" name="amount"
+                       th:value="${#numbers.formatDecimal(balance,1,2)}" required/></div>
+            <div class="field"><label>Method</label>
+                <select name="method"><option>Cash</option><option>Card</option><option>Transfer</option></select></div>
+            <div class="field"><button class="btn" type="submit">Record payment</button></div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

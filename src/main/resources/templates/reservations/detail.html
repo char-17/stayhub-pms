@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Reservation', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <div class="toolbar">
+            <h2 style="margin:0;">Reservation #<span th:text="${reservation.id}">1</span> —
+                <span class="badge" th:classappend="${reservation.status}" th:text="${reservation.status}">BOOKED</span></h2>
+            <div>
+                <a class="btn sm ghost" th:if="${reservation.status.name() == 'BOOKED'}" th:href="@{'/reservations/' + ${reservation.id} + '/edit'}">Edit</a>
+                <form th:if="${reservation.status.name() == 'BOOKED'}" class="inline" method="post" th:action="@{'/reservations/' + ${reservation.id} + '/check-in'}"><button class="btn sm" type="submit">Check-in</button></form>
+                <form th:if="${reservation.status.name() == 'BOOKED'}" class="inline" method="post" th:action="@{'/reservations/' + ${reservation.id} + '/cancel'}"><button class="btn sm danger" type="submit">Cancel</button></form>
+                <form th:if="${reservation.status.name() == 'CHECKED_IN'}" class="inline" method="post" th:action="@{'/reservations/' + ${reservation.id} + '/check-out'}"><button class="btn sm" type="submit">Check-out</button></form>
+            </div>
+        </div>
+        <table>
+            <tbody>
+            <tr><th style="width:180px;">Guest</th><td><a th:href="@{'/guests/' + ${reservation.guest.id}}" th:text="${reservation.guest.fullName()}">Guest</a></td></tr>
+            <tr><th>Room</th><td th:text="${reservation.room.number} + ' · ' + ${reservation.room.roomType.name}">101</td></tr>
+            <tr><th>Dates</th><td th:text="${reservation.checkIn} + ' → ' + ${reservation.checkOut} + ' (' + ${reservation.nights()} + ' nights)'">…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Folio</h2>
+        <table>
+            <thead><tr><th>Description</th><th class="num">Amount</th></tr></thead>
+            <tbody>
+            <tr><td th:text="'Room ' + ${reservation.room.number} + ' · ' + ${reservation.nights()} + ' night(s)'">Room</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(reservation.totalPrice,1,2)}">€ 180.00</td></tr>
+            <tr th:each="c : ${charges}">
+                <td th:text="${c.description}">Breakfast</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(c.amount,1,2)}">€ 10.00</td>
+            </tr>
+            <tr><th>Total</th><th class="num" th:text="'€ ' + ${#numbers.formatDecimal(grandTotal,1,2)}">€ 190.00</th></tr>
+            </tbody>
+        </table>
+
+        <form th:if="${reservation.status.name() == 'BOOKED' or reservation.status.name() == 'CHECKED_IN'}"
+              method="post" th:action="@{'/reservations/' + ${reservation.id} + '/charges'}" class="row" style="margin-top:16px;">
+            <div class="field"><label>Add charge</label><input type="text" name="description" placeholder="Breakfast" required/></div>
+            <div class="field"><label>Amount (€)</label><input type="number" step="0.01" min="0.01" name="amount" required/></div>
+            <div class="field"><button class="btn" type="submit">Post charge</button></div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

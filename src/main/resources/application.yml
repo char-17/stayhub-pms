@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: stayhub-pms
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pms}
+    username: ${SPRING_DATASOURCE_USERNAME:pms}
+    password: ${SPRING_DATASOURCE_PASSWORD:pms}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+
+pms:
+  demo-data: ${PMS_DEMO_DATA:false}
+  admin:
+    username: ${PMS_ADMIN_USERNAME:}
+    password: ${PMS_ADMIN_PASSWORD:}

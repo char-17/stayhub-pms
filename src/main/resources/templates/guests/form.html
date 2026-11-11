@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('New guest', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel" style="max-width:520px;">
+        <h2>Guest details</h2>
+        <form th:action="@{/guests}" th:object="${guest}" method="post">
+            <div class="row">
+                <div class="field"><label>First name</label><input type="text" th:field="*{firstName}" required/></div>
+                <div class="field"><label>Last name</label><input type="text" th:field="*{lastName}" required/></div>
+            </div>
+            <div class="field"><label>Email</label><input type="email" th:field="*{email}"/></div>
+            <div class="row">
+                <div class="field"><label>Phone</label><input type="text" th:field="*{phone}"/></div>
+                <div class="field"><label>ID / passport</label><input type="text" th:field="*{documentId}"/></div>
+            </div>
+            <button type="submit" class="btn">Save guest</button>
+            <a class="btn ghost" th:href="@{/guests}">Cancel</a>
+        </form>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Dashboard', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="cards">
+        <div class="card"><div class="num" th:text="${occupancy} + '%'">0%</div><div class="lbl">Occupancy</div></div>
+        <div class="card"><div class="num" th:text="${inHouse}">0</div><div class="lbl">In-house guests</div></div>
+        <div class="card"><div class="num" th:text="${totalRooms}">0</div><div class="lbl">Rooms</div></div>
+        <div class="card"><div class="num" th:text="${unpaid}">0</div><div class="lbl">Unpaid invoices</div></div>
+        <div class="card"><div class="num" th:text="${toClean}">0</div><div class="lbl">Rooms to clean</div></div>
+    </div>
+
+    <div class="panel">
+        <h2>Arrivals today</h2>
+        <table>
+            <thead><tr><th>Guest</th><th>Room</th><th>Check-out</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${arrivals}">
+                <td th:text="${r.guest.fullName()}">Guest</td>
+                <td th:text="${r.room.number}">101</td>
+                <td th:text="${r.checkOut}">2026-01-01</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(arrivals)}"><td colspan="3" class="muted">No arrivals scheduled for today.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Departures today</h2>
+        <table>
+            <thead><tr><th>Guest</th><th>Room</th><th>Checked in</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${departures}">
+                <td th:text="${r.guest.fullName()}">Guest</td>
+                <td th:text="${r.room.number}">101</td>
+                <td th:text="${r.checkIn}">2026-01-01</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(departures)}"><td colspan="3" class="muted">No departures scheduled for today.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

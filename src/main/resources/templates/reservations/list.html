@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Reservations', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="toolbar">
+        <form method="get" th:action="@{/reservations}" class="inline">
+            <select name="status" onchange="this.form.submit()"
+                    style="padding:8px 11px;border:1px solid var(--line);border-radius:7px;">
+                <option value="" th:selected="${status == null}">All statuses</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${status != null and status == s}">BOOKED</option>
+            </select>
+        </form>
+        <a class="btn" th:href="@{/reservations/new}">+ New reservation</a>
+    </div>
+    <table>
+        <thead>
+        <tr><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th class="num">Total</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${reservations}">
+            <td th:text="${r.guest.fullName()}">Guest</td>
+            <td th:text="${r.room.number} + ' (' + ${r.room.roomType.name} + ')'">101</td>
+            <td th:text="${r.checkIn}">2026-01-01</td>
+            <td th:text="${r.checkOut}">2026-01-03</td>
+            <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(r.totalPrice,1,2)}">€ 180.00</td>
+            <td><span class="badge" th:classappend="${r.status}" th:text="${r.status}">BOOKED</span></td>
+            <td>
+                <a class="btn sm ghost" th:href="@{'/reservations/' + ${r.id}}">Open</a>
+                <form th:if="${r.status.name() == 'BOOKED'}" class="inline" method="post" th:action="@{'/reservations/' + ${r.id} + '/check-in'}">
+                    <button class="btn sm" type="submit">Check-in</button>
+                </form>
+                <form th:if="${r.status.name() == 'CHECKED_IN'}" class="inline" method="post" th:action="@{'/reservations/' + ${r.id} + '/check-out'}">
+                    <button class="btn sm" type="submit">Check-out</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reservations)}"><td colspan="7" class="muted">No reservations.</td></tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

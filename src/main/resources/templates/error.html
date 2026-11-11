@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Error', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <h2>Error <span th:text="${status}">500</span></h2>
+        <p th:switch="${status}">
+            <span th:case="404">The page or record you asked for does not exist. It may have been removed, or the link is wrong.</span>
+            <span th:case="403">Your account is not allowed to open this page.</span>
+            <span th:case="400">The request could not be understood. Please go back and check the values you entered.</span>
+            <span th:case="*">Something went wrong on our side. The problem has been logged; please try again.</span>
+        </p>
+        <p><a class="btn" th:href="@{/}">Back to dashboard</a></p>
+    </div>
+</main>
+</body>
+</html>

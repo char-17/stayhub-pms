@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Guests', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="toolbar">
+        <form method="get" th:action="@{/guests}" class="inline">
+            <input type="text" name="q" th:value="${q}" placeholder="Search by surname…"
+                   style="padding:8px 11px;border:1px solid var(--line);border-radius:7px;"/>
+            <button class="btn sm ghost" type="submit">Search</button>
+        </form>
+        <a class="btn" th:href="@{/guests/new}">+ New guest</a>
+    </div>
+    <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Document</th></tr></thead>
+        <tbody>
+        <tr th:each="g : ${guests}">
+            <td><a th:href="@{'/guests/' + ${g.id}}" th:text="${g.fullName()}">Name</a></td>
+            <td class="muted" th:text="${g.email}">email</td>
+            <td class="muted" th:text="${g.phone}">phone</td>
+            <td class="muted" th:text="${g.documentId}">doc</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(guests)}"><td colspan="4" class="muted">No guests found.</td></tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
