@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Reports', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <form method="get" th:action="@{/reports}" class="row">
+            <div class="field"><label>From</label><input type="date" name="from" th:value="${from}"/></div>
+            <div class="field"><label>To</label><input type="date" name="to" th:value="${to}"/></div>
+            <div class="field"><button class="btn" type="submit">Run report</button></div>
+        </form>
+    </div>
+
+    <div th:if="${report != null}">
+        <div class="cards">
+            <div class="card"><div class="num" th:text="${report.occupancyPct} + '%'">0%</div><div class="lbl">Occupancy</div></div>
+            <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(report.revenue,1,2)}">€ 0</div><div class="lbl">Revenue (invoiced)</div></div>
+            <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(report.adr,1,2)}">€ 0</div><div class="lbl">ADR</div></div>
+            <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(report.revpar,1,2)}">€ 0</div><div class="lbl">RevPAR</div></div>
+        </div>
+        <div class="panel">
+            <h2 th:text="'Period: ' + ${report.from} + ' → ' + ${report.to} + ' (' + ${report.nights} + ' nights)'">Period</h2>
+            <table>
+                <tbody>
+                <tr><th style="width:280px;">Rooms</th><td th:text="${report.rooms}">10</td></tr>
+                <tr><th>Available room-nights</th><td th:text="${report.availableRoomNights}">300</td></tr>
+                <tr><th>Sold room-nights</th><td th:text="${report.soldRoomNights}">120</td></tr>
+                <tr><th>Revenue invoiced</th><td th:text="'€ ' + ${#numbers.formatDecimal(report.revenue,1,2)}">€ 0</td></tr>
+                <tr><th>Payments collected</th><td th:text="'€ ' + ${#numbers.formatDecimal(report.collected,1,2)}">€ 0</td></tr>
+                <tr><th>Arrivals</th><td th:text="${report.arrivals}">4</td></tr>
+                <tr><th>Departures</th><td th:text="${report.departures}">3</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

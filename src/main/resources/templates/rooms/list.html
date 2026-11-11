@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Rooms', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <h2>Room types</h2>
+        <table>
+            <thead><tr><th>Type</th><th>Capacity</th><th class="num">Rate / night</th><th>Description</th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${roomTypes}">
+                <td th:text="${t.name}">Double</td>
+                <td th:text="${t.capacity}">2</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(t.basePrice,1,2)}">€ 90.00</td>
+                <td class="muted" th:text="${t.description}">…</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Rooms</h2>
+        <table>
+            <thead><tr><th>Number</th><th>Type</th><th>Floor</th><th>Status</th><th>Housekeeping</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${rooms}">
+                <td th:text="${r.number}">101</td>
+                <td th:text="${r.roomType.name}">Single</td>
+                <td th:text="${r.floor}">1</td>
+                <td><span class="badge" th:classappend="${r.status}" th:text="${r.status}">AVAILABLE</span></td>
+                <td><span class="badge" th:classappend="${r.housekeeping}" th:text="${r.housekeeping}">CLEAN</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

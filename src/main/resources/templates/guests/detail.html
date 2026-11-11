@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Guest profile', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<main>
+    <div class="cards">
+        <div class="card"><div class="num" th:text="${#lists.size(reservations)}">0</div><div class="lbl">Stays</div></div>
+        <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(invoiced,1,2)}">€ 0</div><div class="lbl">Invoiced</div></div>
+        <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(paid,1,2)}">€ 0</div><div class="lbl">Paid</div></div>
+    </div>
+
+    <div class="panel">
+        <h2 th:text="${guest.fullName()}">Guest</h2>
+        <table>
+            <tbody>
+            <tr><th style="width:180px;">Email</th><td class="muted" th:text="${guest.email}">email</td></tr>
+            <tr><th>Phone</th><td class="muted" th:text="${guest.phone}">phone</td></tr>
+            <tr><th>ID / passport</th><td class="muted" th:text="${guest.documentId}">doc</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Stays</h2>
+        <table>
+            <thead><tr><th>Room</th><th>Check-in</th><th>Check-out</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${reservations}">
+                <td th:text="${r.room.number}">101</td>
+                <td th:text="${r.checkIn}">2026-01-01</td>
+                <td th:text="${r.checkOut}">2026-01-03</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(r.totalPrice,1,2)}">€ 180.00</td>
+                <td><span class="badge" th:classappend="${r.status}" th:text="${r.status}">BOOKED</span></td>
+                <td><a class="btn sm ghost" th:href="@{'/reservations/' + ${r.id}}">Open</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(reservations)}"><td colspan="6" class="muted">No stays.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Invoices</h2>
+        <table>
+            <thead><tr><th>Invoice</th><th class="num">Amount</th><th class="num">Balance</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="row : ${invoiceRows}">
+                <td th:text="'#' + ${row.invoice.id}">#1</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(row.invoice.amount,1,2)}">€ 190.00</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(row.balance,1,2)}">€ 0.00</td>
+                <td><span class="badge" th:classappend="${row.invoice.status}" th:text="${row.invoice.status}">PAID</span></td>
+                <td><a class="btn sm ghost" sec:authorize="hasRole('MANAGER')" th:href="@{'/billing/' + ${row.invoice.id}}">Open</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(invoiceRows)}"><td colspan="5" class="muted">No invoices.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

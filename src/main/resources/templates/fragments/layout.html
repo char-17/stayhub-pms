@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" th:fragment="page(title, content)"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="'StayHub — ' + ${title}">StayHub</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">Stay<span>Hub</span></div>
+        <nav>
+            <a th:href="@{/}">Dashboard</a>
+            <a th:href="@{/reservations}">Reservations</a>
+            <a th:href="@{/rooms}">Rooms</a>
+            <a th:href="@{/housekeeping}">Housekeeping</a>
+            <a th:href="@{/guests}">Guests</a>
+            <a sec:authorize="hasRole('MANAGER')" th:href="@{/billing}">Billing</a>
+            <a sec:authorize="hasRole('MANAGER')" th:href="@{/reports}">Reports</a>
+        </nav>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <h1 th:text="${title}">Title</h1>
+            <div class="user">
+                <span class="who" sec:authentication="name">user</span>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="linkbtn">Logout</button>
+                </form>
+            </div>
+        </header>
+        <section class="content">
+            <div th:if="${message}" class="flash ok" th:text="${message}"></div>
+            <div th:if="${error}" class="flash err" th:text="${error}"></div>
+            <main th:replace="${content}">content</main>
+        </section>
+    </div>
+</div>
+</body>
+</html>

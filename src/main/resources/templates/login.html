@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>StayHub — Sign in</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body class="login-page">
+<div class="login-card">
+    <div class="brand">Stay<span>Hub</span></div>
+    <div th:if="${param.error}" class="flash err">Invalid username or password.</div>
+    <div th:if="${param.logout}" class="flash ok">You have been logged out.</div>
+    <form th:action="@{/login}" method="post">
+        <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" autofocus required/>
+        </div>
+        <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required/>
+        </div>
+        <button type="submit" class="btn">Sign in</button>
+    </form>
+    <p class="hint" th:if="${demoData}">Demo: manager / manager · reception / reception</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('New reservation', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel">
+        <h2>1 · Choose guest, room type and dates</h2>
+        <form method="get" th:action="@{/reservations/new}">
+            <div class="row">
+                <div class="field">
+                    <label>Guest</label>
+                    <select name="guestId" required>
+                        <option value="" disabled th:selected="${guestId == null}">— select —</option>
+                        <option th:each="g : ${guests}" th:value="${g.id}" th:text="${g.fullName()}"
+                                th:selected="${guestId != null and guestId == g.id}">Guest</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Room type</label>
+                    <select name="roomTypeId" required>
+                        <option value="" disabled th:selected="${roomTypeId == null}">— select —</option>
+                        <option th:each="t : ${roomTypes}" th:value="${t.id}"
+                                th:text="${t.name} + ' (€ ' + ${#numbers.formatDecimal(t.basePrice,1,2)} + ')'"
+                                th:selected="${roomTypeId != null and roomTypeId == t.id}">Double</option>
+                    </select>
+                </div>
+                <div class="field"><label>Check-in</label>
+                    <input type="date" name="checkIn" th:value="${checkIn}" required/></div>
+                <div class="field"><label>Check-out</label>
+                    <input type="date" name="checkOut" th:value="${checkOut}" required/></div>
+                <div class="field"><button type="submit" class="btn">Search availability</button></div>
+            </div>
+        </form>
+    </div>
+
+    <div class="panel" th:if="${searched}">
+        <h2>2 · Available rooms</h2>
+        <table th:if="${!#lists.isEmpty(available)}">
+            <thead><tr><th>Room</th><th>Type</th><th>Floor</th><th class="num">Rate / night</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="room : ${available}">
+                <td th:text="${room.number}">101</td>
+                <td th:text="${room.roomType.name}">Double</td>
+                <td th:text="${room.floor}">1</td>
+                <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(room.roomType.basePrice,1,2)}">€ 90.00</td>
+                <td>
+                    <form method="post" th:action="@{/reservations}" class="inline">
+                        <input type="hidden" name="guestId" th:value="${guestId}"/>
+                        <input type="hidden" name="roomId" th:value="${room.id}"/>
+                        <input type="hidden" name="checkIn" th:value="${checkIn}"/>
+                        <input type="hidden" name="checkOut" th:value="${checkOut}"/>
+                        <button class="btn sm" type="submit" th:disabled="${guestId == null}">Book</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <p th:if="${#lists.isEmpty(available)}" class="muted">No rooms of this type are free for the selected dates.</p>
+        <p th:if="${guestId == null}" class="flash err">Select a guest before booking.</p>
+    </div>
+</main>
+</body>
+</html>

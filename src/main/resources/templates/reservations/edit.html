@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Edit reservation', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <div class="panel" style="max-width:560px;">
+        <h2>Edit reservation #<span th:text="${reservation.id}">1</span></h2>
+        <form method="post" th:action="@{'/reservations/' + ${reservation.id} + '/edit'}">
+            <div class="field">
+                <label>Room (<span th:text="${reservation.room.roomType.name}">Type</span>)</label>
+                <select name="roomId">
+                    <option th:each="room : ${roomsOfType}" th:value="${room.id}"
+                            th:text="'Room ' + ${room.number} + ' · floor ' + ${room.floor}"
+                            th:selected="${room.id == reservation.room.id}">Room 101</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="field"><label>Check-in</label>
+                    <input type="date" name="checkIn" th:value="${reservation.checkIn}" required/></div>
+                <div class="field"><label>Check-out</label>
+                    <input type="date" name="checkOut" th:value="${reservation.checkOut}" required/></div>
+            </div>
+            <button class="btn" type="submit">Save changes</button>
+            <a class="btn ghost" th:href="@{'/reservations/' + ${reservation.id}}">Cancel</a>
+        </form>
+        <p class="muted" style="margin-top:14px;">The total is recalculated from the room rate and the new number of nights.</p>
+    </div>
+</main>
+</body>
+</html>

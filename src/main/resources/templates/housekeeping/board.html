@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Housekeeping', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <table>
+        <thead><tr><th>Room</th><th>Type</th><th>Floor</th><th>Housekeeping</th><th>Actions</th></tr></thead>
+        <tbody>
+        <tr th:each="r : ${rooms}">
+            <td th:text="${r.number}">101</td>
+            <td th:text="${r.roomType.name}">Double</td>
+            <td th:text="${r.floor}">1</td>
+            <td><span class="badge" th:classappend="${r.housekeeping}" th:text="${r.housekeeping}">CLEAN</span></td>
+            <td>
+                <form class="inline" method="post" th:action="@{'/housekeeping/' + ${r.id} + '/clean'}"
+                      th:if="${r.housekeeping.name() != 'CLEAN'}"><button class="btn sm" type="submit">Mark clean</button></form>
+                <form class="inline" method="post" th:action="@{'/housekeeping/' + ${r.id} + '/inspect'}"
+                      th:if="${r.housekeeping.name() == 'CLEAN'}"><button class="btn sm ghost" type="submit">Inspect</button></form>
+                <form class="inline" method="post" th:action="@{'/housekeeping/' + ${r.id} + '/dirty'}"
+                      th:if="${r.housekeeping.name() != 'DIRTY'}"><button class="btn sm danger" type="submit">Mark dirty</button></form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

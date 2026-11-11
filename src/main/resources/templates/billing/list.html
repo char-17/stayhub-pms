@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{fragments/layout :: page('Billing', ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<main>
+    <table>
+        <thead>
+        <tr><th>Invoice</th><th>Guest</th><th>Room</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Balance</th><th>Status</th><th>Issued</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${rows}">
+            <td th:text="'#' + ${row.invoice.id}">#1</td>
+            <td th:text="${row.invoice.guestName}">Guest</td>
+            <td th:text="${row.invoice.roomNumber}">101</td>
+            <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(row.invoice.amount,1,2)}">€ 190.00</td>
+            <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(row.paid,1,2)}">€ 0.00</td>
+            <td class="num" th:text="'€ ' + ${#numbers.formatDecimal(row.balance,1,2)}">€ 190.00</td>
+            <td><span class="badge" th:classappend="${row.invoice.status}" th:text="${row.invoice.status}">UNPAID</span></td>
+            <td class="muted" th:text="${#temporals.format(row.invoice.issuedAt, 'yyyy-MM-dd')}">2026-01-01</td>
+            <td><a class="btn sm ghost" th:href="@{'/billing/' + ${row.invoice.id}}">Open</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(rows)}"><td colspan="9" class="muted">No invoices yet.</td></tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
