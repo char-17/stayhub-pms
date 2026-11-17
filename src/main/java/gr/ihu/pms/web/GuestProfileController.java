@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Καρτέλα πελάτη: στοιχεία, κρατήσεις και τιμολόγια μαζί.
+ * Βρίσκεται στο web ώστε το guests να μη χρειάζεται να γνωρίζει τις κρατήσεις.
+ */
 @Controller
 public class GuestProfileController {
 
@@ -26,6 +30,7 @@ public class GuestProfileController {
         this.billing = billing;
     }
 
+    /** Συνθέτει την καρτέλα πελάτη από τρία modules. */
     @GetMapping("/guests/{id}")
     public String profile(@PathVariable Long id, Model model) {
         List<InvoiceRow> invoiceRows = billing.rowsForGuest(id);

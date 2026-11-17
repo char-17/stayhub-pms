@@ -27,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Δεδομένα επίδειξης (χρήστες, δωμάτια, πελάτες, κρατήσεις). Τρέχει μόνο όταν pms.demo-data=true. */
 @Component
 @ConditionalOnProperty(prefix = "pms", name = "demo-data", havingValue = "true")
 @Order(1)
@@ -54,6 +55,7 @@ public class DataSeeder implements CommandLineRunner {
         this.encoder = encoder;
     }
 
+    /** Γεμίζει τη βάση με τα δεδομένα επίδειξης στην εκκίνηση. */
     @Override
     @Transactional
     public void run(String... args) {
@@ -171,6 +173,7 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
+    /** Βοηθητική: δημιουργεί και αποθηκεύει έναν πελάτη. */
     private Guest saveGuest(String firstName, String lastName, String email, String phone, String documentId) {
         Guest g = new Guest();
         g.setFirstName(firstName);
@@ -183,12 +186,14 @@ public class DataSeeder implements CommandLineRunner {
         return guests.save(g);
     }
 
+    /** Βοηθητική: δημιουργεί κράτηση με υπολογισμένη τιμή. */
     private Reservation createReservation(Guest guest, Room room, LocalDate checkIn, LocalDate checkOut) {
         long nights = ChronoUnit.DAYS.between(checkIn, checkOut);
         BigDecimal price = room.getRoomType().getBasePrice().multiply(BigDecimal.valueOf(nights));
         return reservations.save(new Reservation(guest, room, checkIn, checkOut, price));
     }
 
+    /** Βοηθητική: εκδίδει τιμολόγιο για κράτηση επίδειξης. */
     private Invoice issueInvoice(Reservation res, List<InvoiceLineData> lines) {
         return billing.issueForReservation(
                 res.getId(), res.getGuest().getId(), res.getGuest().fullName(),

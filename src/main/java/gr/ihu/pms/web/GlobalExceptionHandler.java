@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.IOException;
 
+/** Κοινός χειρισμός σφαλμάτων για όλους τους controllers. */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** NotFoundException → HTTP 404 (σελίδα error.html). */
     @ExceptionHandler(NotFoundException.class)
     public void notFound(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.NOT_FOUND.value());

@@ -12,12 +12,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/** Πρόσβαση στη βάση για τις κρατήσεις, μαζί με τα ερωτήματα διαθεσιμότητας. */
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
+    /** Φέρνει την κράτηση κλειδώνοντας τη γραμμή της (SELECT ... FOR UPDATE). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from Reservation r where r.id = :id")
     Optional<Reservation> findByIdForUpdate(@Param("id") Long id);
 
+    /** Διαθέσιμα δωμάτια ενός τύπου: σε λειτουργία, όχι DIRTY, χωρίς ενεργή κράτηση που επικαλύπτεται. */
     @Query("""
         select r from Room r
         where r.roomType.id = :typeId
@@ -34,6 +37,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                   @Param("out") LocalDate out,
                                   @Param("active") Collection<ReservationStatus> active);
 
+    /**
+     * Υπάρχει ενεργή κράτηση του δωματίου που επικαλύπτεται;
+     * Ημι-ανοιχτά διαστήματα: < και >, όχι <=, ώστε αναχώρηση και άφιξη την ίδια μέρα να μη συγκρούονται.
+     */
     @Query("""
         select count(res) > 0 from Reservation res
         where res.room.id = :roomId and res.status in :active
@@ -44,6 +51,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                        @Param("out") LocalDate out,
                        @Param("active") Collection<ReservationStatus> active);
 
+    /** Ίδιος έλεγχος, εξαιρώντας μία κράτηση (για την αλλαγή ημερομηνιών). */
     @Query("""
         select count(res) > 0 from Reservation res
         where res.room.id = :roomId and res.id <> :excludeId and res.status in :active
@@ -55,22 +63,29 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                 @Param("active") Collection<ReservationStatus> active,
                                 @Param("excludeId") Long excludeId);
 
+    /** Κρατήσεις μιας κατάστασης με άφιξη τη δοσμένη ημέρα. */
     @Query("select r from Reservation r where r.status = :status and r.checkIn = :date")
     List<Reservation> findByStatusAndCheckIn(@Param("status") ReservationStatus status,
                                              @Param("date") LocalDate date);
 
+    /** Κρατήσεις μιας κατάστασης με αναχώρηση τη δοσμένη ημέρα. */
     @Query("select r from Reservation r where r.status = :status and r.checkOut = :date")
     List<Reservation> findByStatusAndCheckOut(@Param("status") ReservationStatus status,
                                               @Param("date") LocalDate date);
 
+    /** Όλες οι κρατήσεις, οι νεότερες αφίξεις πρώτα. */
     List<Reservation> findAllByOrderByCheckInDesc();
 
+    /** Οι κρατήσεις μιας κατάστασης. */
     List<Reservation> findByStatusOrderByCheckInDesc(ReservationStatus status);
 
+    /** Οι κρατήσεις ενός πελάτη. */
     List<Reservation> findByGuestIdOrderByCheckInDesc(Long guestId);
 
+    /** Πλήθος κρατήσεων σε μια κατάσταση. */
     long countByStatus(ReservationStatus status);
 
+    /** Κρατήσεις που πέφτουν μέσα στο διάστημα (για τις αναφορές). */
     @Query("""
         select r from Reservation r
         where r.status in :active and r.checkIn < :to and r.checkOut > :from
@@ -79,6 +94,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                   @Param("to") LocalDate to,
                                   @Param("active") Collection<ReservationStatus> active);
 
+    /** Πλήθος αφίξεων στο διάστημα, χωρίς τις ακυρωμένες. */
     @Query("""
         select count(r) from Reservation r
         where r.status <> gr.ihu.pms.reservations.ReservationStatus.CANCELLED
@@ -86,6 +102,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         """)
     long countArrivals(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    /** Πλήθος αναχωρήσεων στο διάστημα, χωρίς τις ακυρωμένες. */
     @Query("""
         select count(r) from Reservation r
         where r.status <> gr.ihu.pms.reservations.ReservationStatus.CANCELLED

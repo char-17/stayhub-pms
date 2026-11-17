@@ -10,6 +10,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Κράτηση: πελάτης, δωμάτιο, ημερομηνίες, τιμή και κατάσταση.
+ * Οι κανόνες του κύκλου ζωής βρίσκονται εδώ:
+ * BOOKED → CHECKED_IN → CHECKED_OUT, ή BOOKED → CANCELLED.
+ */
 @Entity
 public class Reservation {
 
@@ -50,6 +55,7 @@ public class Reservation {
         this.totalPrice = totalPrice;
     }
 
+    /** Πλήθος διανυκτερεύσεων. */
     public long nights() {
         return ChronoUnit.DAYS.between(checkIn, checkOut);
     }
@@ -78,31 +84,48 @@ public class Reservation {
         return status;
     }
 
+    /** Άφιξη: επιτρέπεται μόνο από BOOKED. */
     public void checkIn() {
         require(ReservationStatus.BOOKED, "Only a booked reservation can be checked in");
         status = ReservationStatus.CHECKED_IN;
     }
 
+    /** Αναχώρηση: επιτρέπεται μόνο από CHECKED_IN. */
     public void checkOut() {
         require(ReservationStatus.CHECKED_IN, "Only a checked-in reservation can be checked out");
         status = ReservationStatus.CHECKED_OUT;
     }
 
+    /** Ακύρωση: επιτρέπεται μόνο από BOOKED. */
     public void cancel() {
         require(ReservationStatus.BOOKED, "Only a booked reservation can be cancelled");
         status = ReservationStatus.CANCELLED;
     }
 
+    /** Ελέγχει ότι η κράτηση μπορεί ακόμη να αλλάξει (είναι BOOKED). */
     public void ensureCanBeModified() {
         require(ReservationStatus.BOOKED, "Only a booked reservation can be modified");
     }
 
+    /**
+     * Ελέγχει ότι η κράτηση δέχεται ακόμη χρεώσεις folio: μόνο όσο η διαμονή είναι ενεργή
+     * (BOOKED ή CHECKED_IN). Μετά την αναχώρηση το τιμολόγιο έχει ήδη εκδοθεί.
+     * Ο κανόνας βρισκόταν στον controller· μεταφέρθηκε εδώ ώστε να ισχύει για όλους.
+     */
+    public void ensureAcceptsCharges() {
+        if (status != ReservationStatus.BOOKED && status != ReservationStatus.CHECKED_IN) {
+            throw new BusinessRuleException("Charges can only be posted to an active stay");
+        }
+    }
+
+    /** Πετά BusinessRuleException αν η κατάσταση δεν είναι η αναμενόμενη. */
     private void require(ReservationStatus expected, String message) {
         if (status != expected) {
             throw new BusinessRuleException(message);
         }
     }
 
+    /** Αλλάζει δωμάτιο, ημερομηνίες και τιμή· μόνο σε BOOKED. */
     public void reschedule(Room room, LocalDate checkIn, LocalDate checkOut, BigDecimal totalPrice) {
         ensureCanBeModified();
         this.room = room;

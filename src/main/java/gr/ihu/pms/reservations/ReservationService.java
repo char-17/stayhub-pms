@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/** Λογική κρατήσεων και ενορχηστρωτής: συντονίζει rooms, guests, folio, billing και housekeeping. */
 @Service
 public class ReservationService {
 
+    /** Οι καταστάσεις που δεσμεύουν δωμάτιο. */
     public static final List<ReservationStatus> ACTIVE =
             List.of(ReservationStatus.BOOKED, ReservationStatus.CHECKED_IN);
 
@@ -45,11 +47,13 @@ public class ReservationService {
         this.housekeeping = housekeeping;
     }
 
+    /** Διαθέσιμα δωμάτια ενός τύπου για τις ημερομηνίες. */
     public List<Room> availableRooms(Long roomTypeId, LocalDate checkIn, LocalDate checkOut) {
         validateDates(checkIn, checkOut);
         return reservations.findAvailableRooms(roomTypeId, checkIn, checkOut, ACTIVE);
     }
 
+    /** Νέα κράτηση: κλειδώνει το δωμάτιο, ελέγχει επικάλυψη, υπολογίζει την τιμή. */
     @Transactional
     public Reservation book(Long guestId, Long roomId, LocalDate checkIn, LocalDate checkOut) {
         validateDates(checkIn, checkOut);
@@ -61,6 +65,7 @@ public class ReservationService {
         return reservations.save(new Reservation(guest, room, checkIn, checkOut, price(room, checkIn, checkOut)));
     }
 
+    /** Αλλαγή δωματίου ή ημερομηνιών, με τον ίδιο έλεγχο διαθεσιμότητας. */
     @Transactional
     public Reservation reschedule(Long reservationId, Long newRoomId, LocalDate checkIn, LocalDate checkOut) {
         Reservation r = lock(reservationId);
@@ -74,11 +79,13 @@ public class ReservationService {
         return r;
     }
 
+    /** Check-in (ο κανόνας ελέγχεται μέσα στην οντότητα). */
     @Transactional
     public void checkIn(Long reservationId) {
         lock(reservationId).checkIn();
     }
 
+    /** Check-out σε μία συναλλαγή: κράτηση → CHECKED_OUT, δωμάτιο → DIRTY, χρεώσεις, τιμολόγιο. */
     @Transactional
     public void checkOut(Long reservationId) {
         Reservation r = lock(reservationId);
@@ -95,55 +102,91 @@ public class ReservationService {
                 r.getRoom().getNumber(), (int) r.nights(), lines);
     }
 
+    /** Ακύρωση κράτησης. */
     @Transactional
     public void cancel(Long reservationId) {
         lock(reservationId).cancel();
     }
 
+    /**
+     * Καταχωρεί πρόσθετη χρέωση (folio) σε μια κράτηση.
+     * Κλειδώνει πρώτα την κράτηση, όπως και η αναχώρηση: έτσι μια χρέωση που καταχωρείται την
+     * ίδια στιγμή με το check-out είτε προλαβαίνει το τιμολόγιο, είτε περιμένει, βλέπει
+     * CHECKED_OUT και απορρίπτεται. Χωρίς το κλείδωμα θα μπορούσε να μείνει εκτός τιμολογίου.
+     */
+    @Transactional
+    public Charge addCharge(Long reservationId, String description, BigDecimal amount) {
+        // Ο κανόνας "μόνο σε ενεργή διαμονή" ελέγχεται μέσα στην οντότητα
+        lock(reservationId).ensureAcceptsCharges();
+        // Περιγραφή και ποσό τα επικυρώνει το module folio, μέσω της δημόσιας υπηρεσίας του
+        return folio.addCharge(reservationId, description, amount);
+    }
+
+    /**
+     * Οι κρατήσεις για τη σελίδα λίστας (νεότερες αφίξεις πρώτα), προαιρετικά μιας κατάστασης.
+     * Υπάρχει ώστε ο controller να μη χρησιμοποιεί το repository: controller → υπηρεσία → repository.
+     */
+    public List<Reservation> list(ReservationStatus status) {
+        return status == null
+                ? reservations.findAllByOrderByCheckInDesc()
+                : reservations.findByStatusOrderByCheckInDesc(status);
+    }
+
+    /** Οι κρατήσεις ενός πελάτη. */
     public List<Reservation> forGuest(Long guestId) {
         return reservations.findByGuestIdOrderByCheckInDesc(guestId);
     }
 
+    /** Πόσες διαμονές είναι αυτή τη στιγμή σε εξέλιξη (CHECKED_IN). */
     public long countInHouse() {
         return reservations.countByStatus(ReservationStatus.CHECKED_IN);
     }
 
+    /** Αναμενόμενες αφίξεις της ημέρας. */
     public List<Reservation> arrivalsOn(LocalDate date) {
         return reservations.findByStatusAndCheckIn(ReservationStatus.BOOKED, date);
     }
 
+    /** Αναμενόμενες αναχωρήσεις της ημέρας. */
     public List<Reservation> departuresOn(LocalDate date) {
         return reservations.findByStatusAndCheckOut(ReservationStatus.CHECKED_IN, date);
     }
 
+    /** Κρατήσεις μέσα στο διάστημα (για τις αναφορές). */
     public List<Reservation> soldBetween(LocalDate from, LocalDate to,
                                          Collection<ReservationStatus> sold) {
         return reservations.overlapping(from, to, sold);
     }
 
+    /** Πλήθος αφίξεων στο διάστημα. */
     public long countArrivals(LocalDate from, LocalDate to) {
         return reservations.countArrivals(from, to);
     }
 
+    /** Πλήθος αναχωρήσεων στο διάστημα. */
     public long countDepartures(LocalDate from, LocalDate to) {
         return reservations.countDepartures(from, to);
     }
 
+    /** Τιμή = διανυκτερεύσεις × τιμή του τύπου δωματίου. */
     private BigDecimal price(Room room, LocalDate checkIn, LocalDate checkOut) {
         long nights = ChronoUnit.DAYS.between(checkIn, checkOut);
         return room.getRoomType().getBasePrice().multiply(BigDecimal.valueOf(nights));
     }
 
+    /** Φέρνει την κράτηση κλειδωμένη, ή 404. */
     private Reservation lock(Long id) {
         return reservations.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("reservation", id));
     }
 
+    /** Βρίσκει κράτηση ή πετά NotFoundException (σελίδα 404). */
     public Reservation get(Long id) {
         return reservations.findById(id)
                 .orElseThrow(() -> new NotFoundException("reservation", id));
     }
 
+    /** Οι ημερομηνίες υπάρχουν, η αναχώρηση είναι μετά την άφιξη, η άφιξη όχι στο παρελθόν. */
     private void validateDates(LocalDate checkIn, LocalDate checkOut) {
         if (checkIn == null || checkOut == null) {
             throw new BusinessRuleException("Check-in and check-out dates are required");

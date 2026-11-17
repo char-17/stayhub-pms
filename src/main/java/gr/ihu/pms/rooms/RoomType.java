@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
+/** Τύπος δωματίου (π.χ. δίκλινο), με τιμή ανά νύχτα και χωρητικότητα. */
 @Entity
 public class RoomType {
 

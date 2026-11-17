@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/** Πίνακας καθαριότητας (/housekeeping): αλλαγή κατάστασης δωματίου. */
 @Controller
 @RequestMapping("/housekeeping")
 public class HousekeepingController {
@@ -20,18 +21,21 @@ public class HousekeepingController {
         this.housekeeping = housekeeping;
     }
 
+    /** Όλα τα δωμάτια με την κατάσταση καθαριότητάς τους. */
     @GetMapping
     public String board(Model model) {
         model.addAttribute("rooms", housekeeping.board());
         return "housekeeping/board";
     }
 
+    /** Σημαίνει το δωμάτιο ως καθαρό. */
     @PostMapping("/{roomId}/clean")
     public String clean(@PathVariable Long roomId) {
         housekeeping.setStatus(roomId, HousekeepingStatus.CLEAN);
         return "redirect:/housekeeping";
     }
 
+    /** Σημαίνει το δωμάτιο ως επιθεωρημένο· επιτρέπεται μόνο αν είναι καθαρό. */
     @PostMapping("/{roomId}/inspect")
     public String inspect(@PathVariable Long roomId, RedirectAttributes redirect) {
         try {
@@ -42,6 +46,7 @@ public class HousekeepingController {
         return "redirect:/housekeeping";
     }
 
+    /** Σημαίνει το δωμάτιο ως βρώμικο. */
     @PostMapping("/{roomId}/dirty")
     public String dirty(@PathVariable Long roomId) {
         housekeeping.setStatus(roomId, HousekeepingStatus.DIRTY);

@@ -13,35 +13,39 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Σελίδες κρατήσεων (/reservations): λίστα, λεπτομέρειες, νέα κράτηση, αλλαγή,
+ * check-in, check-out, ακύρωση και χρεώσεις.
+ */
 @Controller
 @RequestMapping("/reservations")
 public class ReservationController {
 
+    // Ο controller μιλά μόνο με υπηρεσίες· και η λίστα έρχεται από την υπηρεσία (service.list)
     private final ReservationService service;
-    private final ReservationRepository reservations;
     private final GuestService guests;
     private final RoomService rooms;
     private final FolioService folio;
 
-    public ReservationController(ReservationService service, ReservationRepository reservations,
+    public ReservationController(ReservationService service,
                                  GuestService guests, RoomService rooms, FolioService folio) {
         this.service = service;
-        this.reservations = reservations;
         this.guests = guests;
         this.rooms = rooms;
         this.folio = folio;
     }
 
+    /** Λίστα κρατήσεων, με προαιρετικό φίλτρο κατάστασης. */
     @GetMapping
     public String list(@RequestParam(required = false) ReservationStatus status, Model model) {
-        model.addAttribute("reservations", status == null
-                ? reservations.findAllByOrderByCheckInDesc()
-                : reservations.findByStatusOrderByCheckInDesc(status));
+        // Η λίστα (με ή χωρίς φίλτρο) έρχεται από την υπηρεσία, όχι από το repository
+        model.addAttribute("reservations", service.list(status));
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("status", status);
         return "reservations/list";
     }
 
+    /** Μια κράτηση με τις χρεώσεις της και το γενικό σύνολο. */
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         Reservation r = get(id);
@@ -53,16 +57,14 @@ public class ReservationController {
         return "reservations/detail";
     }
 
+    /** Προσθέτει χρέωση folio· μόνο σε ενεργή διαμονή. */
     @PostMapping("/{id}/charges")
     public String addCharge(@PathVariable Long id, @RequestParam String description,
                             @RequestParam BigDecimal amount, RedirectAttributes redirect) {
-        Reservation r = get(id);
-        if (r.getStatus() != ReservationStatus.BOOKED && r.getStatus() != ReservationStatus.CHECKED_IN) {
-            redirect.addFlashAttribute("error", "Charges can only be posted to an active stay.");
-            return "redirect:/reservations/" + id;
-        }
+        // Ο κανόνας "μόνο σε ενεργή διαμονή" ελέγχεται από την ίδια την κράτηση, μέσα από τη
+        // ReservationService.addCharge (που κλειδώνει και την κράτηση)· εδώ μόνο το μήνυμα
         try {
-            folio.addCharge(id, description, amount);
+            service.addCharge(id, description, amount);
             redirect.addFlashAttribute("message", "Charge posted.");
         } catch (BusinessRuleException e) {
             redirect.addFlashAttribute("error", e.getMessage());
@@ -70,6 +72,7 @@ public class ReservationController {
         return "redirect:/reservations/" + id;
     }
 
+    /** Φόρμα αλλαγής κράτησης. */
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Reservation r = get(id);
@@ -78,6 +81,7 @@ public class ReservationController {
         return "reservations/edit";
     }
 
+    /** Αλλάζει δωμάτιο ή ημερομηνίες. */
     @PostMapping("/{id}/edit")
     public String edit(@PathVariable Long id, @RequestParam Long roomId,
                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
@@ -93,6 +97,7 @@ public class ReservationController {
         }
     }
 
+    /** Φόρμα νέας κράτησης· με τύπο και ημερομηνίες δείχνει τα διαθέσιμα δωμάτια. */
     @GetMapping("/new")
     public String newForm(@RequestParam(required = false) Long guestId,
                           @RequestParam(required = false) Long roomTypeId,
@@ -116,6 +121,7 @@ public class ReservationController {
         return "reservations/form";
     }
 
+    /** Δημιουργεί την κράτηση· αν το δωμάτιο δεν είναι διαθέσιμο, δείχνει το μήνυμα. */
     @PostMapping
     public String book(@RequestParam Long guestId, @RequestParam Long roomId,
                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
@@ -131,21 +137,25 @@ public class ReservationController {
         }
     }
 
+    /** Check-in. */
     @PostMapping("/{id}/check-in")
     public String checkIn(@PathVariable Long id, RedirectAttributes redirect) {
         return act(redirect, () -> service.checkIn(id), "Checked in.");
     }
 
+    /** Check-out: εκδίδεται και το τιμολόγιο. */
     @PostMapping("/{id}/check-out")
     public String checkOut(@PathVariable Long id, RedirectAttributes redirect) {
         return act(redirect, () -> service.checkOut(id), "Checked out — invoice issued.");
     }
 
+    /** Ακύρωση κράτησης. */
     @PostMapping("/{id}/cancel")
     public String cancel(@PathVariable Long id, RedirectAttributes redirect) {
         return act(redirect, () -> service.cancel(id), "Reservation cancelled.");
     }
 
+    /** Εκτελεί μια ενέργεια και δείχνει μήνυμα επιτυχίας ή το μήνυμα του κανόνα που παραβιάστηκε. */
     private String act(RedirectAttributes redirect, Runnable action, String ok) {
         try {
             action.run();
@@ -156,6 +166,7 @@ public class ReservationController {
         return "redirect:/reservations";
     }
 
+    /** Βρίσκει την κράτηση ή 404. */
     private Reservation get(Long id) {
         return service.get(id);
     }

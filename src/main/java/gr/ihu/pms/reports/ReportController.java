@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 
+/** Σελίδα αναφορών (/reports). Μόνο για MANAGER. */
 @Controller
 public class ReportController {
 
@@ -18,6 +19,7 @@ public class ReportController {
         this.reports = reports;
     }
 
+    /** Αναφορά για το διάστημα· χωρίς ημερομηνίες δείχνει τον τρέχοντα μήνα. */
     @GetMapping("/reports")
     public String report(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+/** Υπολογίζει την αναφορά πληρότητας και εσόδων, από τα services των άλλων modules. */
 @Service
 public class ReportService {
 
@@ -30,6 +31,7 @@ public class ReportService {
         this.billing = billing;
     }
 
+    /** Υπολογίζει πληρότητα, έσοδα, ADR και RevPAR για το διάστημα [from, to). */
     public OccupancyReport between(LocalDate from, LocalDate to) {
         if (from == null || to == null || !from.isBefore(to)) {
             throw new BusinessRuleException("'To' must be after 'From'");

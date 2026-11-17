@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/** Σελίδα δωματίων (/rooms). */
 @Controller
 public class RoomController {
 
@@ -13,6 +14,7 @@ public class RoomController {
         this.rooms = rooms;
     }
 
+    /** Λίστα δωματίων και τύπων. */
     @GetMapping("/rooms")
     public String list(Model model) {
         model.addAttribute("rooms", rooms.all());

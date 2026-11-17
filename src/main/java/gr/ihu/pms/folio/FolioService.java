@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+/** Λογική των πρόσθετων χρεώσεων διαμονής (folio). */
 @Service
 public class FolioService {
 
@@ -16,6 +17,7 @@ public class FolioService {
         this.charges = charges;
     }
 
+    /** Καταχωρεί χρέωση· απαιτεί περιγραφή και θετικό ποσό. */
     @Transactional
     public Charge addCharge(Long reservationId, String description, BigDecimal amount) {
         if (description == null || description.isBlank()) {
@@ -27,10 +29,12 @@ public class FolioService {
         return charges.save(new Charge(reservationId, description, amount));
     }
 
+    /** Οι χρεώσεις μιας κράτησης. */
     public List<Charge> forReservation(Long reservationId) {
         return charges.findByReservationIdOrderByCreatedAtAsc(reservationId);
     }
 
+    /** Άθροισμα των χρεώσεων μιας κράτησης. */
     public BigDecimal total(Long reservationId) {
         return forReservation(reservationId).stream()
                 .map(Charge::getAmount)

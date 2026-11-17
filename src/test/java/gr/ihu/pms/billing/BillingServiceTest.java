@@ -30,6 +30,9 @@ class BillingServiceTest {
         Invoice inv = issue(1001L);
         assertThat(inv.getAmount()).isEqualByComparingTo("230.00");
         assertThat(inv.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+        // Οι γραμμές δίνονται μόνο για ανάγνωση: γραμμή προστίθεται μόνο με την addLine
+        assertThatThrownBy(() -> inv.getLines().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test

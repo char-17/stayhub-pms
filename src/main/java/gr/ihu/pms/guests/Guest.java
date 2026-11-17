@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 
+/** Πελάτης του ξενοδοχείου (ονοματεπώνυμο, επικοινωνία, έγγραφο ταυτότητας). */
 @Entity
 public class Guest {
 
@@ -34,6 +35,7 @@ public class Guest {
     public Guest() {
     }
 
+    /** Όνομα και επώνυμο μαζί. */
     public String fullName() {
         return firstName + " " + lastName;
     }

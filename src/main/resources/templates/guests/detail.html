@@ -6,8 +6,10 @@
 <main>
     <div class="cards">
         <div class="card"><div class="num" th:text="${#lists.size(reservations)}">0</div><div class="lbl">Stays</div></div>
-        <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(invoiced,1,2)}">€ 0</div><div class="lbl">Invoiced</div></div>
-        <div class="card"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(paid,1,2)}">€ 0</div><div class="lbl">Paid</div></div>
+        <!--/* Τα οικονομικά (τιμολογημένα, πληρωμένα, τιμολόγια) μόνο για τον MANAGER,
+               όπως η τιμολόγηση και οι αναφορές */-->
+        <div class="card" sec:authorize="hasRole('MANAGER')"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(invoiced,1,2)}">€ 0</div><div class="lbl">Invoiced</div></div>
+        <div class="card" sec:authorize="hasRole('MANAGER')"><div class="num" th:text="'€ ' + ${#numbers.formatDecimal(paid,1,2)}">€ 0</div><div class="lbl">Paid</div></div>
     </div>
 
     <div class="panel">
@@ -39,7 +41,7 @@
         </table>
     </div>
 
-    <div class="panel">
+    <div class="panel" sec:authorize="hasRole('MANAGER')">
         <h2>Invoices</h2>
         <table>
             <thead><tr><th>Invoice</th><th class="num">Amount</th><th class="num">Balance</th><th>Status</th><th></th></tr></thead>

@@ -22,10 +22,15 @@ class ReservationTest {
     void normalLifecycleIsBookedThenCheckedInThenCheckedOut() {
         Reservation r = booked();
         assertThat(r.getStatus()).isEqualTo(ReservationStatus.BOOKED);
+        // Χρεώσεις folio γίνονται δεκτές όσο η διαμονή είναι ενεργή (BOOKED, CHECKED_IN)...
+        r.ensureAcceptsCharges();
         r.checkIn();
         assertThat(r.getStatus()).isEqualTo(ReservationStatus.CHECKED_IN);
+        r.ensureAcceptsCharges();
         r.checkOut();
         assertThat(r.getStatus()).isEqualTo(ReservationStatus.CHECKED_OUT);
+        // ...και απορρίπτονται μετά την αναχώρηση: το τιμολόγιο έχει ήδη εκδοθεί
+        assertThatThrownBy(r::ensureAcceptsCharges).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
@@ -50,6 +55,8 @@ class ReservationTest {
         assertThatThrownBy(r::checkIn).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(r::checkOut).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(r::cancel).isInstanceOf(BusinessRuleException.class);
+        // Ούτε χρεώσεις δέχεται πια
+        assertThatThrownBy(r::ensureAcceptsCharges).isInstanceOf(BusinessRuleException.class);
         assertThat(r.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
     }
 

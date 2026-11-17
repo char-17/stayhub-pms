@@ -3,10 +3,16 @@ target/
 *.class
 *.log
 
+# IDEs
+.idea/
 *.iml
 .vscode/
 .settings/
 .project
 .classpath
 
+# OS
 .DS_Store
+
+# Thesis text and presentation: kept on this computer only, never uploaded
+docs/

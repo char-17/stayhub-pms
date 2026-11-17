@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
+/** Μία γραμμή τιμολογίου (περιγραφή και ποσό), αποθηκευμένη στη βάση. */
 @Entity
 public class InvoiceLine {
 

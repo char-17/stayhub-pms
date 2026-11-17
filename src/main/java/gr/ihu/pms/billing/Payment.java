@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Μία πληρωμή τιμολογίου (ποσό, τρόπος, ημερομηνία). Κάθε πληρωμή είναι ξεχωριστή εγγραφή. */
 @Entity
 public class Payment {
 

@@ -12,6 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Δημιουργεί τον πρώτο διευθυντή σε άδεια βάση, από τις μεταβλητές
+ * PMS_ADMIN_USERNAME / PMS_ADMIN_PASSWORD.
+ */
 @Component
 @Order(2)
 public class InitialAdminCreator implements CommandLineRunner {
@@ -34,6 +38,7 @@ public class InitialAdminCreator implements CommandLineRunner {
         this.password = password;
     }
 
+    /** Τρέχει στην εκκίνηση: δεν κάνει τίποτα αν υπάρχουν χρήστες· απορρίπτει κωδικό κάτω από 8 χαρακτήρες. */
     @Override
     @Transactional
     public void run(String... args) {

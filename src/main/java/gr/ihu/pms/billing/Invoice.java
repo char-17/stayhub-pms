@@ -5,8 +5,14 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+// Collections.unmodifiableList: οι γραμμές δίνονται προς τα έξω μόνο για ανάγνωση
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * Τιμολόγιο: στιγμιότυπο της διαμονής τη στιγμή του check-out.
+ * Κρατά μόνο τον αριθμό της κράτησης (όχι σχέση) και αντίγραφα των στοιχείων της.
+ */
 @Entity
 public class Invoice {
 
@@ -45,6 +51,8 @@ public class Invoice {
     protected Invoice() {
     }
 
+//    Προσθέτει τη γραμμή και ενημερώνει το σύνολο, στο ίδιο βήμα.
+//    Το σύνολο δεν μπορεί ποτέ να διαφωνεί με το άθροισμα των γραμμών
     public Invoice(Long reservationId, Long guestId, String guestName, String roomNumber, int nights) {
         this.reservationId = reservationId;
         this.guestId = guestId;
@@ -53,11 +61,13 @@ public class Invoice {
         this.nights = nights;
     }
 
+    /** Προσθέτει γραμμή και αυξάνει το σύνολο κατά το ποσό της. */
     public void addLine(String description, BigDecimal lineAmount) {
         lines.add(new InvoiceLine(this, description, lineAmount));
         this.amount = this.amount.add(lineAmount);
     }
 
+    /** Ορίζει την κατάσταση (UNPAID / PARTIAL / PAID) από το συνολικό πληρωμένο ποσό. */
     public void applyPaid(BigDecimal paid) {
         if (paid.compareTo(amount) >= 0) {
             status = InvoiceStatus.PAID;
@@ -104,7 +114,11 @@ public class Invoice {
         return issuedAt;
     }
 
+    /**
+     * Οι γραμμές, μόνο για ανάγνωση. Γραμμή προστίθεται μόνο με την addLine, που ενημερώνει
+     * και το σύνολο· έτσι το ποσό δεν μπορεί να διαφωνήσει με το άθροισμα των γραμμών.
+     */
     public List<InvoiceLine> getLines() {
-        return lines;
+        return Collections.unmodifiableList(lines);
     }
 }

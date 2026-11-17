@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Πρόσθετη χρέωση μιας διαμονής (π.χ. πρωινό). Δένεται με την κράτηση μόνο με τον αριθμό της. */
 @Entity
 public class Charge {
 

@@ -2,7 +2,6 @@ package gr.ihu.pms.reservations;
 
 import gr.ihu.pms.billing.InvoiceRepository;
 import gr.ihu.pms.common.BusinessRuleException;
-import gr.ihu.pms.folio.FolioService;
 import gr.ihu.pms.guests.Guest;
 import gr.ihu.pms.guests.GuestRepository;
 import gr.ihu.pms.rooms.HousekeepingStatus;
@@ -31,7 +30,6 @@ class ReservationServiceTest {
     @Autowired RoomTypeRepository roomTypes;
     @Autowired GuestRepository guests;
     @Autowired InvoiceRepository invoices;
-    @Autowired FolioService folio;
 
     Long guestId, roomId;
     final LocalDate in = LocalDate.now().plusDays(1);
@@ -66,12 +64,17 @@ class ReservationServiceTest {
     void checkoutIssuesInvoiceIncludingFolioCharges() {
         Reservation r = service.book(guestId, roomId, in, out);
         service.checkIn(r.getId());
-        folio.addCharge(r.getId(), "Breakfast", new BigDecimal("30.00"));
+        // Η χρέωση καταχωρείται μέσω της ReservationService, όπως από τη σελίδα της κράτησης
+        service.addCharge(r.getId(), "Breakfast", new BigDecimal("30.00"));
         service.checkOut(r.getId());
 
         var invoice = invoices.findByReservationId(r.getId()).orElseThrow();
         assertThat(invoice.getAmount()).isEqualByComparingTo("230.00");
         assertThat(invoice.getLines()).hasSize(2);
+
+        // Μετά την αναχώρηση το τιμολόγιο έχει εκδοθεί: νέα χρέωση απορρίπτεται
+        assertThatThrownBy(() -> service.addCharge(r.getId(), "Minibar", new BigDecimal("10.00")))
+                .isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
@@ -93,6 +96,13 @@ class ReservationServiceTest {
     @Test
     void pastCheckInIsRejected() {
         assertThatThrownBy(() -> service.book(guestId, roomId, LocalDate.now().minusDays(1), out))
+                .isInstanceOf(BusinessRuleException.class);
+
+        // Το ίδιο και για δωμάτιο εκτός λειτουργίας, έστω κι αν δεν έχει καμία κράτηση
+        Room room = rooms.findById(roomId).orElseThrow();
+        room.takeOutOfService();
+        rooms.save(room);
+        assertThatThrownBy(() -> service.book(guestId, roomId, in, out))
                 .isInstanceOf(BusinessRuleException.class);
     }
 }

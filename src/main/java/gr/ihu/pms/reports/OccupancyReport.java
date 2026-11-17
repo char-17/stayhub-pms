@@ -3,6 +3,7 @@ package gr.ihu.pms.reports;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/** Το αποτέλεσμα μιας αναφοράς: πληρότητα, έσοδα, εισπράξεις, ADR, RevPAR, αφίξεις, αναχωρήσεις. */
 public record OccupancyReport(
         LocalDate from,
         LocalDate to,

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 
+/** Αρχική σελίδα: δείκτες της ημέρας από rooms, reservations και billing. */
 @Controller
 public class DashboardController {
 
@@ -24,6 +25,7 @@ public class DashboardController {
         this.billing = billing;
     }
 
+    /** Πληρότητα, αφίξεις, αναχωρήσεις, ανεξόφλητα και δωμάτια προς καθαρισμό. */
     @GetMapping("/")
     public String dashboard(Model model) {
         LocalDate today = LocalDate.now();

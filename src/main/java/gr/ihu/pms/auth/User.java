@@ -2,10 +2,13 @@ package gr.ihu.pms.auth;
 
 import jakarta.persistence.*;
 
+//Η κλαση για τον χρηστη (οντοτητα) οπως αποθηκευεται στην βαση
+//Δεν υπάρχουν setters. Ο χρήστης δημιουργείται με όλα του τα στοιχεία και μετά μόνο διαβάζεται.
 @Entity
 @Table(name = "app_user")
 public class User {
 
+    //Ιδ οριζουμε το προτευον κλειδι
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
